@@ -2,34 +2,77 @@
   "name": "crawl402",
   "version": "0.1.0",
   "description": "Charge AI crawlers a micropayment to read your Next.js site. HTTP 402 + x402 v2, USDC on Base. Humans and search engines stay free.",
-  "keywords": ["x402", "http-402", "paywall", "ai-crawler", "gptbot", "bot", "micropayments", "usdc", "base", "nextjs", "middleware", "proxy"],
+  "keywords": [
+    "x402",
+    "http-402",
+    "paywall",
+    "ai-crawler",
+    "gptbot",
+    "bot",
+    "micropayments",
+    "usdc",
+    "base",
+    "nextjs",
+    "middleware",
+    "proxy"
+  ],
   "license": "MIT",
   "author": "devops-shivam",
   "homepage": "https://github.com/devops-shivam/crawl402#readme",
-  "repository": { "type": "git", "url": "git+https://github.com/devops-shivam/crawl402.git" },
-  "bugs": { "url": "https://github.com/devops-shivam/crawl402/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devops-shivam/crawl402.git"
+  },
+  "bugs": {
+    "url": "https://github.com/devops-shivam/crawl402/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./next": { "types": "./dist/adapters/next.d.ts", "import": "./dist/adapters/next.js" },
-    "./fetch": { "types": "./dist/adapters/fetch.d.ts", "import": "./dist/adapters/fetch.js" },
-    "./testing": { "types": "./dist/testing/index.d.ts", "import": "./dist/testing/index.js" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./next": {
+      "types": "./dist/adapters/next.d.ts",
+      "import": "./dist/adapters/next.js"
+    },
+    "./fetch": {
+      "types": "./dist/adapters/fetch.d.ts",
+      "import": "./dist/adapters/fetch.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    },
     "./package.json": "./package.json"
   },
-  "files": ["dist", "README.md", "LICENSE", "CHANGELOG.md"],
-  "engines": { "node": ">=20" },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node --test test/*.test.mjs",
+    "test": "npm run build && node scripts/test.mjs",
     "playground": "npm run build && node scripts/build-playground.mjs",
     "prepublishOnly": "npm test"
   },
-  "peerDependencies": { "next": ">=13.4.0" },
-  "peerDependenciesMeta": { "next": { "optional": true } },
+  "peerDependencies": {
+    "next": ">=13.4.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "next": "^16.0.0",
