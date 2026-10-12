@@ -21,7 +21,7 @@ Pre-release versions (anything with a `-`, like `0.2.0-beta.1`) are published un
 
 npm publishing uses [trusted publishing](https://docs.npmjs.com/trusted-publishers): GitHub Actions proves its identity to npm with a short-lived OIDC token, so no npm token is stored in the repository. npm configures this per package, so the very first version is published by hand.
 
-1. **Publish the first version from your computer** (Node.js 22.14+ and npm 11.5.1+):
+1. **Publish the first version from your computer** (Node.js 22 or later, on Windows, macOS or Linux):
    ```bash
    git clone https://github.com/devops-shivam/crawl402.git && cd crawl402
    npm install
