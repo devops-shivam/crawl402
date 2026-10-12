@@ -1,10 +1,19 @@
 version: 2
+
+# One pull request a month with every dependency update (npm packages and GitHub Actions) together.
+multi-ecosystem-groups:
+  monthly-updates:
+    schedule:
+      interval: monthly
+    labels: ["dependencies"]
+
 updates:
   - package-ecosystem: npm
     directory: /
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: monthly-updates
+
   - package-ecosystem: github-actions
     directory: /
-    schedule:
-      interval: monthly
+    patterns: ["*"]
+    multi-ecosystem-group: monthly-updates
