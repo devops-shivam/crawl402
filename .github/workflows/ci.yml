@@ -17,8 +17,8 @@ jobs:
       matrix:
         node: [20, 22, 24]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node }}
       - run: npm install --no-audit --no-fund
@@ -29,8 +29,8 @@ jobs:
     name: Build example app
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund && npm run build
@@ -41,14 +41,15 @@ jobs:
     name: Check published package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund && npm run build
       - run: npm pack --dry-run
       - name: Every export resolves
         run: |
+          npm install --no-save next react react-dom
           node --input-type=module -e "
             const pkg = (await import('./package.json', { with: { type: 'json' } })).default;
             for (const [k, v] of Object.entries(pkg.exports)) {

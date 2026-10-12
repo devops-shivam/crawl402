@@ -4,13 +4,15 @@ import assert from "node:assert/strict";
 import { HEADERS } from "../dist/index.js";
 import { PAY_TO, UA, BROWSER_HEADERS, setup } from "./helpers.mjs";
 
-let next;
+// Skip only when Next isn't installed. If it is, the adapter must load, so a broken import fails CI.
+let hasNext = true;
 try {
-  next = await import("../dist/adapters/next.js");
+  await import("next/package.json", { with: { type: "json" } });
 } catch {
-  next = null;
+  hasNext = false;
 }
-const { NextRequest } = next ? await import("next/server") : {};
+const next = hasNext ? await import("../dist/adapters/next.js") : null;
+const { NextRequest } = hasNext ? await import("next/server.js") : {};
 const nreq = (path, headers = {}) => new NextRequest("https://site.example" + path, { headers });
 
 test("crawl402Proxy: 402 for crawlers, continue for humans, headers on paid", { skip: !next && "next is not installed" }, async () => {
@@ -30,7 +32,7 @@ test("crawl402Proxy: 402 for crawlers, continue for humans, headers on paid", { 
 
 test("crawl402Proxy chains existing middleware", { skip: !next && "next is not installed" }, async () => {
   const { sandbox } = setup();
-  const { NextResponse } = await import("next/server");
+  const { NextResponse } = await import("next/server.js");
   const proxy = next.crawl402Proxy(
     { payTo: PAY_TO, price: "$0.002", facilitator: sandbox.facilitator },
     { next: (r) => (r.nextUrl.pathname === "/old" ? NextResponse.redirect(new URL("/new", r.url)) : undefined) },

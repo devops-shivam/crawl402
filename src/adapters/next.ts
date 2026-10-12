@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server.js";
 import type { Crawl402, Crawl402Config, HandleOptions } from "../core/engine.js";
 import { toCrawl402 } from "./fetch.js";
 

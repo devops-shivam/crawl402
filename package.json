@@ -20,7 +20,7 @@
     "./package.json": "./package.json"
   },
   "files": ["dist", "README.md", "LICENSE", "CHANGELOG.md"],
-  "engines": { "node": ">=18.17" },
+  "engines": { "node": ">=20" },
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
