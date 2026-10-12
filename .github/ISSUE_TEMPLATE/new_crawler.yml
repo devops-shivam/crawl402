@@ -1,0 +1,30 @@
+name: Add a crawler
+description: Request a new crawler signature for the built-in list
+labels: [crawler-signature]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Crawler name
+      placeholder: ExampleBot
+    validations:
+      required: true
+  - type: input
+    id: ua
+    attributes:
+      label: User-Agent string
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options: [ai-crawler, ai-assistant, scraper, search-engine]
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Link to the operator's documentation
+    validations:
+      required: true

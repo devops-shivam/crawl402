@@ -1,0 +1,22 @@
+{
+  "name": "crawl402-example-nextjs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "bot": "node scripts/bot.mjs"
+  },
+  "dependencies": {
+    "crawl402": "file:../..",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "typescript": "^6.0.0"
+  }
+}

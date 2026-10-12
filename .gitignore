@@ -1,0 +1,11 @@
+node_modules/
+dist/
+playground/dist/
+coverage/
+*.tgz
+.DS_Store
+.env
+.env.local
+.next/
+examples/**/node_modules/
+examples/**/.next/

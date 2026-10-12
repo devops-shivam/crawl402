@@ -1,0 +1,261 @@
+<title>crawl402 Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: setup rail on the left, the HTTP exchange as a vertical trace on the right, ledger underneath. */
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --sunken: #eef1f6;
+  --ink: #131925;
+  --muted: #5a6477;
+  --line: #dce1ea;
+  --accent: #2346c4;
+  --accent-ink: #ffffff;
+  --ok: #18774a;
+  --ok-bg: #e3f4ea;
+  --pay: #a65706;
+  --pay-bg: #fdf0df;
+  --err: #b0233a;
+  --err-bg: #fbe6e9;
+  --code-key: #2346c4;
+  --code-str: #18774a;
+  --code-num: #a65706;
+  --font-ui: "Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1218; --surface: #151b24; --sunken: #10151d; --ink: #e5e9f0; --muted: #94a0b4; --line: #263042;
+    --accent: #7f97ff; --accent-ink: #0e1218; --ok: #52c98f; --ok-bg: #11291d; --pay: #f1a64c; --pay-bg: #2c1e0c;
+    --err: #ff7487; --err-bg: #2d1218; --code-key: #9db0ff; --code-str: #6fd6a3; --code-num: #f1b56a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1218; --surface: #151b24; --sunken: #10151d; --ink: #e5e9f0; --muted: #94a0b4; --line: #263042;
+  --accent: #7f97ff; --accent-ink: #0e1218; --ok: #52c98f; --ok-bg: #11291d; --pay: #f1a64c; --pay-bg: #2c1e0c;
+  --err: #ff7487; --err-bg: #2d1218; --code-key: #9db0ff; --code-str: #6fd6a3; --code-num: #f1b56a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 24px; }
+header.top { display: grid; gap: 6px; }
+header.top h1 { margin: 0; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+header.top p { margin: 0; color: var(--muted); max-width: 70ch; }
+.eyebrow { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 600; }
+.layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+/* Setup rail */
+aside.rail { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+@media (max-width: 900px) { aside.rail { position: static; } }
+.group { display: grid; gap: 8px; }
+.group > label, .group > .lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+select, input[type="text"] { width: 100%; font: inherit; font-size: 0.92rem; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--sunken); color: var(--ink); }
+select:focus-visible, input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 0; }
+.ua { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); word-break: break-all; background: var(--sunken); border-radius: 6px; padding: 6px 8px; }
+.wallet { display: grid; gap: 6px; padding: 12px; border: 1px dashed var(--line); border-radius: 8px; }
+.wallet .row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.wallet .addr { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.bal { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 7px 12px; font-size: 0.88rem; font-weight: 500; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.small { padding: 4px 9px; font-size: 0.78rem; }
+
+/* Trace */
+main.trace { display: grid; gap: 14px; min-width: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.controls .spacer { flex: 1; }
+.verdict { padding: 12px 16px; border-radius: var(--r); font-weight: 600; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border: 1px solid var(--line); background: var(--surface); }
+.verdict.ok { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+.verdict.pay { background: var(--pay-bg); color: var(--pay); border-color: transparent; }
+.verdict.err { background: var(--err-bg); color: var(--err); border-color: transparent; }
+.verdict .sub { font-weight: 400; color: var(--ink); opacity: 0.85; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.step > .head { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+.step .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 0.8rem; font-weight: 700; background: var(--sunken); color: var(--muted); flex: none; font-variant-numeric: tabular-nums; }
+.step.active .num, .step.done .num { background: var(--accent); color: var(--accent-ink); }
+.step .head h2 { margin: 0; font-size: 1rem; font-weight: 600; flex: 1; min-width: 0; }
+.step .head .who { font-size: 0.8rem; color: var(--muted); font-weight: 400; display: block; }
+.step.pending { opacity: 0.6; }
+.step > .body { border-top: 1px solid var(--line); padding: 14px 16px 16px; display: grid; gap: 12px; }
+.chip { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; padding: 3px 8px; border-radius: 999px; background: var(--sunken); color: var(--muted); white-space: nowrap; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.pay { background: var(--pay-bg); color: var(--pay); }
+.chip.err { background: var(--err-bg); color: var(--err); }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 1100px) { .pair { grid-template-columns: minmax(0, 1fr); } }
+.panel { display: grid; gap: 6px; min-width: 0; }
+.panel .cap { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+pre { margin: 0; font-family: var(--font-mono); font-size: 0.76rem; line-height: 1.55; background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; overflow-x: auto; max-height: 340px; white-space: pre-wrap; word-break: break-all; color: var(--ink); }
+pre .k { color: var(--code-key); }
+pre .s { color: var(--code-str); }
+pre .n { color: var(--code-num); }
+pre .h { color: var(--muted); }
+pre .st-ok { color: var(--ok); font-weight: 600; }
+pre .st-pay { color: var(--pay); font-weight: 600; }
+pre .st-err { color: var(--err); font-weight: 600; }
+.note { font-size: 0.86rem; color: var(--muted); margin: 0; max-width: 75ch; }
+.note b { color: var(--ink); font-weight: 600; }
+.calls { display: grid; gap: 10px; }
+.call { border-left: 3px solid var(--line); padding-left: 12px; display: grid; gap: 6px; }
+.call.ok { border-color: var(--ok); }
+.call.err { border-color: var(--err); }
+.call .t { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; }
+
+/* Served page preview */
+.browser { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.browser .bar { background: var(--sunken); padding: 6px 10px; font-family: var(--font-mono); font-size: 0.74rem; color: var(--muted); border-bottom: 1px solid var(--line); word-break: break-all; }
+.browser article { padding: 16px 18px; max-width: 68ch; }
+.browser article h3 { margin: 0 0 4px; font-size: 1.2rem; text-wrap: balance; }
+.browser article .by { font-size: 0.8rem; color: var(--muted); margin: 0 0 10px; }
+.browser article p { margin: 0 0 10px; }
+.browser pre { border: 0; border-radius: 0; }
+
+/* Ledger */
+section.ledger { display: grid; gap: 12px; }
+section.ledger h2 { margin: 0; font-size: 1.05rem; }
+.ledger-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 700px) { .ledger-grid { grid-template-columns: minmax(0, 1fr); } }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; display: grid; gap: 2px; }
+.stat .v { font-family: var(--font-mono); font-size: 1.25rem; font-variant-numeric: tabular-nums; font-weight: 500; }
+.stat .l { font-size: 0.8rem; color: var(--muted); }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+td.mono { font-family: var(--font-mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: 0; }
+.empty { padding: 14px; color: var(--muted); font-size: 0.88rem; }
+details.code summary { cursor: pointer; font-size: 0.88rem; font-weight: 600; }
+details.code pre { margin-top: 8px; }
+@media (prefers-reduced-motion: no-preference) {
+  .step > .body { animation: rise 0.22s ease-out; }
+  @keyframes rise { from { transform: translateY(4px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">x402 v2 · Base Sepolia · simulated wallet &amp; facilitator</span>
+    <h1>crawl402 Playground</h1>
+    <p>Send a request to a demo news site as a crawler, read the 402 payment headers it returns, sign a simulated USDC payment, and retry to unlock the article. Every decision comes from the real crawl402 engine running in this page, with the in-memory sandbox from <code>crawl402/testing</code> standing in for the wallet and facilitator.</p>
+  </header>
+
+  <div class="layout">
+    <aside class="rail" aria-label="Setup">
+      <div class="group">
+        <label for="client">Who is requesting</label>
+        <select id="client"></select>
+        <div class="ua" id="uaView"></div>
+        <input type="text" id="customUa" placeholder="Custom User-Agent" hidden>
+      </div>
+      <div class="group">
+        <label for="path">Page</label>
+        <select id="path">
+          <option value="/articles/monsoon-retreat-2026">/articles/monsoon-retreat-2026</option>
+          <option value="/articles/metro-phase-5-corridors">/articles/metro-phase-5-corridors</option>
+          <option value="/robots.txt">/robots.txt (always free)</option>
+          <option value="/sitemap.xml">/sitemap.xml (always free)</option>
+        </select>
+      </div>
+      <div class="group">
+        <label for="price">Price per page (USDC)</label>
+        <input type="text" id="price" value="$0.002" inputmode="decimal" autocomplete="off">
+        <p class="hint" id="priceHint">= 2000 atomic units (USDC has 6 decimals)</p>
+      </div>
+      <div class="group">
+        <label for="tamper">Payment behaviour</label>
+        <select id="tamper">
+          <option value="none">Pay correctly</option>
+          <option value="underpay">Underpay (sign for 0.000001 USDC)</option>
+          <option value="wrongRecipient">Send to the wrong wallet</option>
+          <option value="expired">Use an expired authorization</option>
+          <option value="badSignature">Forge the signature</option>
+          <option value="replay">Replay the previous payment</option>
+          <option value="offline">Facilitator is offline</option>
+        </select>
+        <p class="hint" id="tamperHint">A valid payment unlocks the page.</p>
+      </div>
+      <div class="group">
+        <span class="lbl">Crawler wallet</span>
+        <div class="wallet">
+          <div class="row"><span class="addr" id="botAddr"></span></div>
+          <div class="row"><span>Balance</span><span class="bal" id="botBal"></span></div>
+          <div class="btn-row">
+            <button class="small" id="topUp" type="button">Add 0.01 USDC</button>
+            <button class="small" id="drain" type="button">Empty wallet</button>
+          </div>
+        </div>
+      </div>
+      <details class="code">
+        <summary>The site's proxy.ts</summary>
+        <pre id="configCode"></pre>
+      </details>
+    </aside>
+
+    <main class="trace" aria-live="polite">
+      <div class="controls">
+        <button class="primary" id="runAll" type="button">Run full flow</button>
+        <button id="reset" type="button">Reset</button>
+        <span class="spacer"></span>
+        <span class="chip" id="phaseChip">Ready</span>
+      </div>
+      <div class="verdict" id="verdict">Choose who is requesting, then send the request in step 1.</div>
+
+      <section class="step active" id="s1">
+        <div class="head">
+          <span class="num">1</span>
+          <h2>Request the page<span class="who">Crawler → site</span></h2>
+          <span class="chip" id="s1chip">not sent</span>
+          <button class="primary" id="send" type="button">Send request</button>
+        </div>
+        <div class="body" id="s1body" hidden></div>
+      </section>
+
+      <section class="step pending" id="s2">
+        <div class="head">
+          <span class="num">2</span>
+          <h2>Sign the payment<span class="who">Crawler's wallet, offline</span></h2>
+          <span class="chip" id="s2chip">waiting</span>
+          <button class="primary" id="sign" type="button" disabled>Sign payment</button>
+        </div>
+        <div class="body" id="s2body" hidden></div>
+      </section>
+
+      <section class="step pending" id="s3">
+        <div class="head">
+          <span class="num">3</span>
+          <h2>Retry with payment<span class="who">Crawler → site → facilitator</span></h2>
+          <span class="chip" id="s3chip">waiting</span>
+          <button class="primary" id="retry" type="button" disabled>Retry request</button>
+        </div>
+        <div class="body" id="s3body" hidden></div>
+      </section>
+    </main>
+  </div>
+
+  <section class="ledger" aria-label="Ledger">
+    <h2>Ledger</h2>
+    <div class="ledger-grid">
+      <div class="stat"><span class="v" id="siteBal">0.000000</span><span class="l">Site wallet earned (USDC)</span></div>
+      <div class="stat"><span class="v" id="paidCount">0</span><span class="l">Paid page views</span></div>
+      <div class="stat"><span class="v" id="blockedCount">0</span><span class="l">Requests answered with 402</span></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Time</th><th>Client</th><th>Path</th><th>Status</th><th>Amount</th><th>Transaction</th></tr></thead>
+        <tbody id="log"><tr><td colspan="6" class="empty">No requests yet.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script type="module" src="./app.js"></script>

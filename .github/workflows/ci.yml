@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+
+  example:
+    name: Build example app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund && npm run build
+      - working-directory: examples/nextjs
+        run: npm install --no-audit --no-fund && npx next build
+
+  package:
+    name: Check published package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund && npm run build
+      - run: npm pack --dry-run
+      - name: Every export resolves
+        run: |
+          node --input-type=module -e "
+            const pkg = (await import('./package.json', { with: { type: 'json' } })).default;
+            for (const [k, v] of Object.entries(pkg.exports)) {
+              if (typeof v === 'string') continue;
+              await import(new URL(v.import, 'file://' + process.cwd() + '/').href);
+              console.log('ok', k);
+            }"
