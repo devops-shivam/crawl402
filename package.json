@@ -74,8 +74,8 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.6.4",
     "next": "^16.0.0",
-    "typescript": "^6.0.0"
+    "typescript": "^7.0.2"
   }
 }
