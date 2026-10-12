@@ -19,6 +19,8 @@ Crawler ──GET /articles/post + PAYMENT-SIGNATURE──▶ proxy.ts ──ver
 - **Testable.** `crawl402/testing` ships an in-memory facilitator and wallets, so you can test the full payment flow without a blockchain.
 - **Zero runtime dependencies.**
 
+**[Try it in your browser →](https://devops-shivam.github.io/crawl402/)**
+
 > **Status:** early release (0.x). The API may change before 1.0. Payments default to **Base Sepolia testnet**.
 
 ## Install
@@ -153,7 +155,7 @@ The sandbox signatures are not cryptographic. Never use `crawl402/testing` in pr
 
 ## Try it without installing anything
 
-- **[Playground](playground/):** an interactive page that runs the real engine in your browser. Pick a crawler, see the 402 headers, sign a simulated payment and unlock the page. Run `npm run playground`, then serve the folder (for example `npx serve playground/dist`) and open it in your browser.
+- **[Playground](https://devops-shivam.github.io/crawl402/):** an interactive page that runs the real engine in your browser. Pick a crawler, see the 402 headers, sign a simulated payment and unlock the page. To run it locally: `npm run playground`, then serve the folder (for example `npx serve playground/dist`).
 - **[Example app](examples/nextjs):** a small Next.js site with a `bot` script that plays the crawler end to end.
 
 ## Payments: what's supported

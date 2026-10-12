@@ -1,8 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Try crawl402 in your browser: request a page as an AI crawler, read the HTTP 402 payment headers, sign a simulated USDC payment and unlock the content.">
+<meta name="color-scheme" content="light dark">
 <title>crawl402 Playground</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
+/* Base reset (the page is a standalone document on GitHub Pages) */
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-size: 14px; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
 /* Layout: setup rail on the left, the HTTP exchange as a vertical trace on the right, ledger underneath. */
 :root {
   --bg: #f4f6f9;
@@ -51,7 +63,8 @@ header.top p { margin: 0; color: var(--muted); max-width: 70ch; }
 /* Setup rail */
 aside.rail { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
 @media (max-width: 900px) { aside.rail { position: static; } }
-.group { display: grid; gap: 8px; }
+.group { display: grid; gap: 8px; min-width: 0; }
+aside.rail, .group, .wallet { grid-template-columns: minmax(0, 1fr); }
 .group > label, .group > .lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
 select, input[type="text"] { width: 100%; font: inherit; font-size: 0.92rem; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--sunken); color: var(--ink); }
 select:focus-visible, input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -59,7 +72,7 @@ select:focus-visible, input:focus-visible, button:focus-visible { outline: 2px s
 .ua { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); word-break: break-all; background: var(--sunken); border-radius: 6px; padding: 6px 8px; }
 .wallet { display: grid; gap: 6px; padding: 12px; border: 1px dashed var(--line); border-radius: 8px; }
 .wallet .row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
-.wallet .addr { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.wallet .addr { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); overflow-wrap: anywhere; min-width: 0; }
 .bal { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
 button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 7px 12px; font-size: 0.88rem; font-weight: 500; }
@@ -141,7 +154,9 @@ details.code pre { margin-top: 8px; }
   @keyframes rise { from { transform: translateY(4px); opacity: 0.4; } to { transform: none; opacity: 1; } }
 }
 </style>
-
+<script type="module" src="./app.js"></script>
+</head>
+<body>
 <div class="wrap">
   <header class="top">
     <span class="eyebrow">x402 v2 · Base Sepolia · simulated wallet &amp; facilitator</span>
@@ -257,5 +272,6 @@ details.code pre { margin-top: 8px; }
     </div>
   </section>
 </div>
-
-<script type="module" src="./app.js"></script>
+<noscript><p style="padding:16px">The playground needs JavaScript.</p></noscript>
+</body>
+</html>
