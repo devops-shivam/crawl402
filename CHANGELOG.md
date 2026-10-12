@@ -2,7 +2,9 @@
 
 All notable changes are documented here. This project follows [Semantic Versioning](https://semver.org/). Until 1.0, minor versions may contain breaking changes.
 
-## 0.1.0 (unreleased)
+Each release needs a `## x.y.z` section; its text becomes the GitHub Release notes. See [docs/releasing.md](docs/releasing.md).
+
+## 0.1.0
 
 First public release.
 

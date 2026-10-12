@@ -47,6 +47,8 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund && npm run build
       - run: npm pack --dry-run
+      - name: Release notes exist for this version
+        run: node scripts/release-notes.mjs
       - name: Every export resolves
         run: |
           npm install --no-save next react react-dom

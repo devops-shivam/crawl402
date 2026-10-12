@@ -31,6 +31,10 @@ See [docs/architecture.md](docs/architecture.md). In short: `src/core` is the en
 - Update `README.md` or `docs/` when you change the public API, and add a line to `CHANGELOG.md`.
 - One logical change per PR.
 
+## Releasing
+
+Maintainers release by bumping the version in a pull request. Merging it publishes to npm automatically. See [docs/releasing.md](docs/releasing.md).
+
 ## Reporting security issues
 
 Please don't open a public issue. See [SECURITY.md](SECURITY.md).

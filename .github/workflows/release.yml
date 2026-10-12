@@ -1,32 +1,101 @@
 name: Release
 
-# Publishes to npm when you publish a GitHub Release (tag like v0.1.0).
-# Setup: add an npm automation token as the repository secret NPM_TOKEN.
+# Publishes to npm automatically when a push to main carries a version that isn't on npm yet.
+#
+#   1. In a pull request, bump "version" in package.json and add a "## x.y.z" section to CHANGELOG.md.
+#   2. Merge it. This workflow tests, publishes to npm, and creates the vX.Y.Z tag and GitHub Release.
+#
+# Pushes that don't change the version publish nothing.
+# Authentication uses npm trusted publishing (OIDC), so no npm token is stored in the repo.
+# See docs/releasing.md for the one-time setup.
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
-  contents: read
-  id-token: write # for npm provenance
+  contents: write # create the tag and GitHub Release
+  id-token: write # npm trusted publishing + provenance
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
-      - run: npm install --no-audit --no-fund
-      - run: npm test
-      - name: Check tag matches package.json version
+
+      - name: Work out what to release
+        id: plan
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
-          VERSION="$(node -p "require('./package.json').version")"
-          if [ "$TAG" != "$VERSION" ]; then echo "Tag v$TAG does not match package.json $VERSION"; exit 1; fi
-      # Provenance needs a public repository, so it's only added once the repo is public.
-      - run: npm publish --access public ${{ github.event.repository.private == false && '--provenance' || '' }}
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is already on npm; nothing to publish."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is not on npm yet; it will be published."
+          fi
+
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "tag=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Pre-releases (1.2.0-beta.1) go to the "next" dist-tag so `npm install crawl402` keeps getting the stable version.
+          if [[ "$VERSION" == *-* ]]; then echo "dist_tag=next" >> "$GITHUB_OUTPUT"; else echo "dist_tag=latest" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Check release notes exist
+        if: steps.plan.outputs.publish == 'true' || steps.plan.outputs.tag == 'true'
+        run: node scripts/release-notes.mjs > "$RUNNER_TEMP/notes.md"
+
+      - name: Install and test
+        if: steps.plan.outputs.publish == 'true'
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+
+      - name: Publish to npm
+        if: steps.plan.outputs.publish == 'true'
+        run: |
+          npm install -g npm@^11.5.1 # trusted publishing needs npm 11.5.1+
+          npm publish --access public --tag "${{ steps.plan.outputs.dist_tag }}"
+
+      - name: Create tag and GitHub Release
+        if: steps.plan.outputs.tag == 'true'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          PRERELEASE=""
+          if [[ "$VERSION" == *-* ]]; then PRERELEASE="--prerelease"; fi
+          gh release create "v$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            $PRERELEASE
+
+      - name: Summary
+        run: |
+          {
+            echo "### ${{ steps.plan.outputs.name }}@${{ steps.plan.outputs.version }}"
+            if [ "${{ steps.plan.outputs.publish }}" = "true" ]; then
+              echo "Published to npm with dist-tag \`${{ steps.plan.outputs.dist_tag }}\`: https://www.npmjs.com/package/${{ steps.plan.outputs.name }}"
+            else
+              echo "Already on npm. Nothing published."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
