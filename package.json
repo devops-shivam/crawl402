@@ -1,6 +1,6 @@
 {
   "name": "crawl402",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Charge AI crawlers a micropayment to read your Next.js site. HTTP 402 + x402 v2, USDC on Base. Humans and search engines stay free.",
   "keywords": [
     "x402",
